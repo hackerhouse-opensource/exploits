@@ -1,0 +1,130 @@
+[fantastic@localhost BT]$ cat notes.txt 
+###  ### ######## ######## ######## ######## 
+##  #### ###  ### ######## ######## ######## 
+## # ### #      # # #   ## #  ###   #  #  ## 
+#  #  ## ###  ###    ##  #    # #   #   #  # 
+#   #  # ###  ### #  ##  # #        #  ##  # 
+#  ##  # ###  # # #     ## ##     # #  ##  # 
+# #   ## ####  ## #  ##### ##  #  # #  ##    
+######## ########     #### ######## ######## 
+Another sad story inside the world of consumer insecurities, this time
+a look at the British Telecom provided "infinity" CPE. BT provide two
+pieces of equipment, one is the flagship BTHub3 which provides WiFi
+and user networking the other is a Huawei DSL modem for provisioning
+internet to the hub. This is a look inside the Huawei modem, where it
+was discovered a JTAG and UART pin-out were provided and cleanly
+labelled near the main CPU as two blocks of 5 pins, allowing a 10pin
+header to be soldered to the device. It was discovered that the UART
+provides the serialoutput of the device during boot and it is possible
+to interact with the bootloader from then on. A BusPirate was used in
+the making of this movie.
+
+The BootLoader identifies itself during POST as the following, identifying
+also the chipset type and versions in use:
+
+CFE version 1.0.37-102.6 for BCM96368 (32bit,SP,BE)                             
+Build Date: Tue Apr 13 14:47:58 CST 2010 (root@g40420m)                         
+Copyright (C) 2000-2008 Broadcom Corporation.                                   
+                                                                                
+Parallel flash device: name AM29LV320MT, id 0x2201, size 8192KB                 
+CPU type 0x2A031: 400MHz, Bus: 160MHz, Ref: 64MHz                               
+CPU running TP0                                                                 
+Total memory: 33554432 bytes (32MB)                                             
+Boot Address 0xb8000000    
+
+With access to the bootloader obtained, an attacker can halt the
+boot process and make use of the bootloader to modify the boot
+parameters, additionally they may reprogram the MAC address of the
+device to arbitrary values using the "b" Change board parameters
+
+CFE> help                                                                       
+Available commands:                                                             
+                                                                                
+sm                  Set memory or registers.                                    
+dm                  Dump memory or registers.                                   
+w                   Write the whole image start from beginning of the flash     
+e                   Erase [n]vram or [a]ll flash except bootrom                 
+r                   Run program from flash image or from host depend on [f/h] fg
+p                   Print boot line and board parameter info                    
+c                   Change booline parameters                                   
+f                   Write image to the flash                                    
+i                   Erase persistent storage data                               
+b                   Change board parameters                                     
+reset               Reset the board                                             
+flashimage          Flashes a compressed image after the bootloader.            
+help                Obtain help for CFE commands                                
+                                                                                
+For more information about a command, enter 'help command-name'                 
+*** command status = 0                                                          
+CFE> 
+
+
+After booting the modem runs a restrictive Huwaei configuration shell
+that can be used for basic diagnositics and Administrative tasks. The
+default username and password is "admin" / "admin". After authentication
+you can execute a limited BusyBox ash shell using the "shell" command:
+
+
+Welcome Visiting Huawei  Home Gateway                                           
+Copyright by Huawei Technologies Co., Ltd.                                      
+Login:admin                                                                     
+Password:                                                                       
+ATP>shell                                                                       
+                                                                                
+                                                                                
+BusyBox v1.9.1 (2010-10-15 17:59:06 CST) built-in shell (ash)                   
+Enter 'help' for a list of built-in commands.                                   
+                                                                                
+#
+
+Alarmingly, the BT ADSL router device is configured in an out-of-the
+box configuration state to be remotely managed and controlled by unknown
+parties. The following netstat output shows that "tftp", "ssh" and "telnet"
+management services are running with full root privileges and listening
+on network interfaces, which are configured as bridges to physical 
+connections:
+
+# netstat -an 
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 0.0.0.0:161             0.0.0.0:*               LISTEN      
+tcp        0      0 127.0.0.1:2600          0.0.0.0:*               LISTEN      
+tcp        0      0 127.0.0.1:8011          0.0.0.0:*               LISTEN      
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      
+tcp        0      0 0.0.0.0:53              0.0.0.0:*               LISTEN      
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      
+tcp        0      0 0.0.0.0:23              0.0.0.0:*               LISTEN      
+tcp        0      0 127.0.0.1:2600          127.0.0.1:33287         ESTABLISHED 
+tcp        0      0 127.0.0.1:33287         127.0.0.1:2600          ESTABLISHED 
+udp        0      0 0.0.0.0:161             0.0.0.0:*                           
+udp        0      0 0.0.0.0:53              0.0.0.0:*                           
+udp        0      0 0.0.0.0:69              0.0.0.0:*                           
+
+By reconfiguring the network connection it was discovered that an attacker 
+could authenticate to the limited shell using the default "admin" shell
+and gain access to the device over a network interface:
+
+[fantastic@localhost ro]$ ssh -l admin 192.168.2.1
+admin@192.168.2.1's password: 
+PTY allocation request failed on channel 0
+
+ATP>shell
+shell
+
+
+BusyBox v1.9.1 (2010-10-15 17:59:06 CST) built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+# 
+
+network traffic rules indicate that this is intended to be restrictive
+functionality and only reachable from an upstream ISP providor - however
+with such an insecure password security does not seem to be a primary
+concern. Additionally a "BTAgent" process and configuration directory
+has been identified which appears to be a network management agent that
+performs polling for upstream firmware (to allow the device to be 
+reflashed) and may also contain security vulnerabilities that could 
+allow reprogramming of the device from a remote location. These 
+files consist of a number of libraries and binaries and appear to make
+some use of PKI although this maybe just to validate a firmware
+image file as opposed to authentication.

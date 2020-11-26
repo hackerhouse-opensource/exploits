@@ -1,0 +1,123 @@
+AirWatch MDM solution has "jailbreak" detection, the binary was decrypted and disassembled to
+identify how the detection works. It was found this detection was shit (technical term) and 
+could be bypassed using the following exploits.
+
+Rename /Applications/Cydia.app and /etc/apt or alternatively modify one byte of the string
+in a decrypted binary and repack to run on a jailbroken device.
+
+For lulz the vulnerable function is shown here.
+
+ -- prdelka (13/11/12)
+
+__text:00062A14 ; =============== S U B R O U T I N E =======================================
+__text:00062A14
+__text:00062A14 ; Attributes: bp-based frame
+__text:00062A14
+__text:00062A14 sub_62A14                               ; DATA XREF: -[AWCompromiseDetection detectCompromiseStatus]+9Ao
+__text:00062A14                                         ; -[AWCompromiseDetection detectCompromiseStatus]+B6o
+__text:00062A14
+__text:00062A14 var_28          = -0x28
+__text:00062A14 var_24          = -0x24
+__text:00062A14 var_20          = -0x20
+__text:00062A14 var_1C          = -0x1C
+__text:00062A14
+__text:00062A14                 PUSH            {R4-R7,LR}
+__text:00062A16                 ADD             R7, SP, #0xC
+__text:00062A18                 PUSH.W          {R8,R10,R11}
+__text:00062A1C                 SUB             SP, SP, #0x10
+__text:00062A1E                 MOV             R10, R0
+__text:00062A20                 MOV             R5, R2
+__text:00062A22                 UXTB            R0, R1
+__text:00062A24                 CMP             R0, #1
+__text:00062A26                 IT EQ
+__text:00062A28                 CMPEQ           R5, #0
+__text:00062A2A                 BNE.W           loc_62B4C
+__text:00062A2E                 MOV             R1, (selRef_defaultManager - 0x62A42) ; selRef_defaultManager
+__text:00062A36                 MOV             R0, (classRef_NSFileManager - 0x62A44) ; classRef_NSFileManager
+__text:00062A3E                 ADD             R1, PC ; selRef_defaultManager
+__text:00062A40                 ADD             R0, PC ; classRef_NSFileManager
+__text:00062A42                 LDR             R1, [R1] ; "defaultManager"
+__text:00062A44                 LDR             R0, [R0] ; _OBJC_CLASS_$_NSFileManager
+__text:00062A46                 BLX             _objc_msgSend
+__text:00062A4A                 MOV             R4, R0
+__text:00062A4C                 MOV             R0, (selRef_fileExistsAtPath_ - 0x62A5C) ; selRef_fileExistsAtPath_
+__text:00062A54                 MOVW            R2, #0xC80E
+__text:00062A58                 ADD             R0, PC ; selRef_fileExistsAtPath_
+__text:00062A5A                 MOVT.W          R2, #0x13
+__text:00062A5E                 ADD             R2, PC  ; "/Applications/Cydia.app"
+__text:00062A60                 LDR             R5, [R0] ; "fileExistsAtPath:"
+__text:00062A62                 MOV             R0, R4
+__text:00062A64                 MOV             R1, R5
+__text:00062A66                 BLX             _objc_msgSend
+__text:00062A6A                 STR             R0, [SP,#0x28+var_1C]
+__text:00062A6C                 MOVW            R2, #0xC804
+__text:00062A70                 MOV             R0, R4
+__text:00062A72                 MOVT.W          R2, #0x13
+__text:00062A76                 MOV             R1, R5
+__text:00062A78                 ADD             R2, PC  ; "/etc/apt/"
+__text:00062A7A                 MOVS            R4, #4
+__text:00062A7C                 BLX             _objc_msgSend
+__text:00062A80                 STR             R0, [SP,#0x28+var_20]
+__text:00062A82                 MOVW            R1, #0x487C
+__text:00062A86                 MOVS            R3, #0
+__text:00062A88                 MOVT.W          R1, #0x13
+__text:00062A8C                 MOV             R0, (cfstr_Test - 0x62AA4) ; "test"
+__text:00062A94                 MOVW            R2, #0xC7E8
+__text:00062A98                 ADD             R1, PC ; selRef_writeToFile_atomically_encoding_error_
+__text:00062A9A                 MOVT.W          R2, #0x13
+__text:00062A9E                 STR             R4, [SP,#0x28+var_28]
+__text:00062AA0                 ADD             R0, PC  ; "test"
+__text:00062AA2                 STR             R3, [SP,#0x28+var_24]
+__text:00062AA4                 ADD             R2, PC  ; "/var/mobile/mobile.dat"
+__text:00062AA6                 LDR             R1, [R1] ; "writeToFile:atomically:encoding:error:"
+__text:00062AA8                 MOVS            R3, #0
+__text:00062AAA                 BLX             _objc_msgSend
+__text:00062AAE                 MOV             R11, R0
+__text:00062AB0                 BLX             _fork
+__text:00062AB4                 MOV             R6, R0
+__text:00062AB6                 CMP             R6, #0
+__text:00062AB8                 BEQ.W           loc_62CC8
+__text:00062ABC                 MOV             R1, (selRef_delegate - 0x62ACC) ; selRef_delegate
+__text:00062AC4                 LDR.W           R0, [R10,#0x14]
+__text:00062AC8                 ADD             R1, PC ; selRef_delegate
+__text:00062ACA                 LDR.W           R8, [R1] ; "delegate"
+__text:00062ACE                 MOV             R1, R8
+__text:00062AD0                 BLX             _objc_msgSend
+__text:00062AD4                 MOV             R1, (selRef_respondsToSelector_ - 0x62AE8) ; selRef_respondsToSelector_
+__text:00062ADC                 MOV             R2, (selRef_compromiseDetection_succeededWithResponse_ - 0x62AEA) ; selRef_compromiseDetection_succeededWithResponse_
+__text:00062AE4                 ADD             R1, PC ; selRef_respondsToSelector_
+__text:00062AE6                 ADD             R2, PC ; selRef_compromiseDetection_succeededWithResponse_
+__text:00062AE8                 LDR             R1, [R1] ; "respondsToSelector:"
+__text:00062AEA                 LDR             R5, [R2] ; "compromiseDetection:succeededWithRespon"...
+__text:00062AEC                 MOV             R2, R5
+__text:00062AEE                 BLX             _objc_msgSend
+__text:00062AF2                 TST.W           R0, #0xFF
+__text:00062AF6                 BEQ.W           loc_62CC0
+__text:00062AFA                 LDR.W           R0, [R10,#0x14]
+__text:00062AFE                 MOV             R1, R8
+__text:00062B00                 BLX             _objc_msgSend
+__text:00062B04                 MOVS            R4, #0
+__text:00062B06                 MOVW            R9, #0xF4B4
+__text:00062B0A                 CMP             R6, #1
+__text:00062B0C                 MOVT.W          R9, #0x13
+__text:00062B10                 MOV             R1, (selRef_performSelector_withObject_ - 0x62B1E) ; selRef_performSelector_withObject_
+__text:00062B18                 ADD             R9, PC  ; "Not Compromised"
+__text:00062B1A                 ADD             R1, PC ; selRef_performSelector_withObject_
+__text:00062B1C                 MOV.W           R6, #0
+__text:00062B20                 IT LT
+__text:00062B22                 MOVLT           R6, #1
+__text:00062B24                 LDR             R2, [SP,#0x28+var_1C]
+__text:00062B26                 LDR             R3, [SP,#0x28+var_20]
+__text:00062B28                 LDR             R1, [R1] ; "performSelector:withObject:"
+__text:00062B2A                 ORRS            R2, R3
+__text:00062B2C                 MOV             R3, (cfstr_Compromised - 0x62B3C) ; "Compromised"
+__text:00062B34                 ORR.W           R2, R2, R11
+__text:00062B38                 ADD             R3, PC  ; "Compromised"
+__text:00062B3A                 TST.W           R2, #0xFF
+__text:00062B3E                 IT EQ
+__text:00062B40                 MOVEQ           R4, #1
+__text:00062B42                 TST             R4, R6
+__text:00062B44                 IT NE
+__text:00062B46                 MOVNE           R3, R9
+__text:00062B48                 MOV             R2, R5
+__text:00062B4A                 B               loc_62CBC

@@ -1,0 +1,16 @@
+Adabas D 13.01 (GNU/Linux & Win32) Multiple Vulns in WebApps
+============================================================
+Adabas D provides you with a database system that fully implements
+the relational model - including support for domains, primary keys, 
+updatable join views, referential integrity, triggers and database 
+procedures.
+
+A directory traversal vulnerability allows an unauthenticated user to
+display arbitrary files with the privledges of the webserver.
+
+http://www.adabashost.com/cgi-bin/genpg?../../etc/passwd
+
+An SQL injection vulnerability exists that allows an unauthenticated
+user to inject SQL statements into the remote MySQL database.
+
+http://www.adabashost.com/cgi-bin/wque?SqlStmt=select+*+from+tables

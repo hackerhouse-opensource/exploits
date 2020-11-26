@@ -1,0 +1,35 @@
+Microsoft Hotmail Authentication Bypass Vulnerability [Critical]
+
+Description
+	Microsoft Hotmail is one of the leading providers of WebMail. A bug
+exists where an unauthenticated user can become an authenticated user to a 
+hotmail users email account.
+
+The bug exists when a legitamate hotmail user has signed into a hotmail
+account and has not signed out of the account, leaving the session open.
+When a user goes to hotmail.com they will be presented with a prompt and
+URL similar to the following: http://login.passport.net/uilogin.srf?id=2
+ 
+ Please re-enter your password. 
+ Sign in with a different e-mail address. 
+ 
+ E-mail Address   0wn3d@hotmail.com 
+ Password: 
+
+To gain access to the previous authenticated session a user is expected
+to provide the password to the previous session. This password prompt can
+be bypassed via SQL injection using the following URL.
+
+	http://login.passport.net/uilogin.srf?id='
+
+This allows an unauthenticated user to authenticate themselves with the
+previous users session. This is a serious issue when hotmail users use
+their accounts in a shared system environment - for instance a webcafe 
+or library terminal. This and varients of this bug were discovered and
+shared with me by my friend Adam.
+
+ - prdelka
+
+*** Information is no longer valid, but kept here for historical purposes
+*** Note added 24/10/06 * amended for historical accuracy, this file came
+*** from a hacking group you never heard of.

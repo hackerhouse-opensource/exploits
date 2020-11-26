@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+#THC vmap will break when HTTP version checks are done on this script.
+use IO::Socket;
+$serv = new IO::Socket::INET (LocalAddr => '127.0.0.1',
+       	                      LocalPort => 80,
+               	              Proto     => 'tcp',
+                       	      Listen    => 5);
+while(1){
+	$new_sock = $serv->accept();
+	$peerport = $new_sock->peerport();	
+	close($new_sock);
+	$baseport = $peerport;	 
+	$new_sock = $serv->accept();
+	sleep(3);
+	readline($new_sock);
+	sleep(2);
+	print $new_sock "\n";
+	sleep(5);
+}

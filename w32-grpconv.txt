@@ -1,0 +1,10 @@
+grpconv.exe - Microsoft Group converter - command line overflow
+              eip is unicoded
+                    
+              <557><XX/XX><500+>
+
+              WinXP+SP1(en)
+              Unicode results: 12374 Addressable sections, 1738 Usable
+              Found 1 0x002200F0 - call eax (eax points to 0x00000001)
+
+

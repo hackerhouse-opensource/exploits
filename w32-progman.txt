@@ -1,0 +1,8 @@
+[Microsoft Progman Bounds Checking Error]
+
+Description
+        Progman is a microsoft utility for working with program group files
+that is bundled with the windows OS. When a program group file with a description
+of 31 Bytes or more is written to an overflow occurs. If a description of 559 bytes 
+is read, the entry truncates to 37 bytes and the overflow does not occur. 
+

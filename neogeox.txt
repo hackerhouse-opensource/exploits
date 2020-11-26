@@ -1,0 +1,567 @@
+ _   _ _____ ___   ____ _____ ___     ____  ___  _     ____   __  __
+| \ | | ____/ _ \ / ___| ____/ _ \   / ___|/ _ \| |   |  _ \  \ \/ /
+|  \| |  _|| | | | |  _|  _|| | | | | |  _| | | | |   | | | |  \  / 
+| |\  | |__| |_| | |_| | |__| |_| | | |_| | |_| | |___| |_| |  /  \ 
+|_| \_|_____\___/ \____|_____\___/   \____|\___/|_____|____/  /_/\_\
+                                                                                
+The Neo Geo X (NGX) is a handheld video game console manufactured by Tommo Inc.,
+licensed by SNK Playmore and the latest console released as part of the Neo Geo
+brand. The device ships with a default enabled UART console and runs a Linux
+distribution. Opening the device exposes 4 pins which are labelled Rx/Tx/3.3V 
+by the top of the PCB on the backside above the battery. Soldering onto these
+points will enable a console which will show the boot messages from the Linux
+kernel and output any debugging information to the user. Additionally it was
+discovered that the device has no root password so from this point you are able
+to use the device as a standard Linux device, install your own ROM's and modify
+the device further etc. This modification does not function with firmware
+version V500A on a device as it appears to have been disabled in the boot
+loader.
+
+Here is an example of the boot log output and root access obtained. baud rate
+is 57600, 8N1. Additionally, a log capture is provided that shows details
+of the firmware update process.
+
+SD card found!                                                                  
+init ok                                                                         
+                                                                                
+                                                                                
+U-Boot 1.1.6-g4c3c6395-dirty (Jan 16 2013 - 12:29:21)                           
+                                                                                
+Board: NEOGEO X(CPU Speed 1020 MHz)                                             
+DRAM:  256 MB                                                                   
+Error: Unknown flash ID, force set to 'SST_ID_39SF040'                          
+Flash: 512 kB                                                                   
+NAND:nand_get_flash_type: No NAND device found!!!                               
+NAND device: dev_id: 0x0000 ext_id: 0x000000 not known!                         
+nand_scan: No NAND device found!!!                                              
+0 MiB                                                                           
+SD init ok                                                                      
+*** Warning - MMC/SD first load, using default environment                      
+                                                                                
+-=-=-=-= 0x8ff7f000 -=-=-=-                                                     
+jz4750_lcd.c 1439                                                               
+usb status is 0                                                                 
+read vbat value is 3810                                                         
+usb status is 0                                                                 
+SNK go go go!                                                                   
+act8600: Write register --00000080                                              
+data: 00000024                                                                  
+act8600: Read register --00000081                                               
+data: 00000005                                                                  
+act8600: Write register --00000081                                              
+data: 00000081                                                                  
+LCD quick disable timeout!                                                      
+jz4750_lcd.c 1385                                                               
+jz4750_lcd.c 1488                                                               
+pix clk is 12142857                                                             
+In jz4750fb_deep_set_mode                                                       
+pix clk is 12142857                                                             
+jz4750_lcd.c 1500                                                               
+LCD quick disable timeout!                                                      
+pix clk is 12142857                                                             
+jz4750_lcd.c 1515                                                               
+usb status is 0                                                                 
+usb status is 0                                                                 
+jz4750_lcd.c 1612                                                               
+SD init ok                                                                      
+Linux version 2.6.31.3-g6113b4c-dirty (ugame_hhx@ugame-desktop) (gcc version 4.3
+Jz47XX Floating coprocessor work on 32*32bit mode                               
+console [early0] enabled                                                        
+CPU revision is: 2ed1024f (Ingenic JZRISC)                                      
+FPU revision is: 00330000                                                       
+CPU clock: 1020MHz, System clock: 128MHz, Peripheral clock: 128MHz, Memory clocz
+JZ4770 F4770 board setup                                                        
+Power Management for JZ                                                         
+Determined physical RAM map:                                                    
+ memory: 04000000 @ 00000000 (usable)                                           
+User-defined physical RAM map:                                                  
+ memory: 10000000 @ 00000000 (usable)                                           
+Zone PFN ranges:                                                                
+  Normal   0x00000000 -> 0x00010000                                             
+Movable zone start PFN for each node                                            
+early_node_map[1] active PFN ranges                                             
+    0: 0x00000000 -> 0x00010000                                                 
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024      
+Kernel command line: mem=256M console=ttyS2,57600n8 ip=off root=/dev/mmcblk0p1 o
+PID hash table entries: 1024 (order: 10, 4096 bytes)                            
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)                 
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)                   
+Primary instruction cache 16kB, VIPT, 4-way, linesize 32 bytes.                 
+Primary data cache 16kB, 4-way, VIPT, no aliases, linesize 32 bytes             
+Memory: 254916k/262144k available (2954k kernel code, 6864k reserved, 1348k dat)
+SLUB: Genslabs=7, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1          
+NR_IRQS:384                                                                     
+Console: colour dummy device 80x25                                              
+console handover: boot [early0] -> real [ttyS2]                                 
+Calibrating delay loop... 814.28 BogoMIPS (lpj=4071424)                         
+Mount-cache hash table entries: 512                                             
+NET: Registered protocol family 16                                              
+jz_platform_init                                                                
+bio: create slab <bio-0> at 0                                                   
+SCSI subsystem initialized                                                      
+usbcore: registered new interface driver usbfs                                  
+usbcore: registered new interface driver hub                                    
+usbcore: registered new device driver usb                                       
+jz_i2c0 jz_i2c0.0: JZ4760 i2c bus driver.                                       
+jz_i2c1 jz_i2c1.1: JZ4760 i2c bus driver.                                       
+jz_i2c2 jz_i2c2.5: JZ4760 i2c bus driver.                                       
+i2c-gpio i2c-gpio.3: using pins 101 (SDA) and 100 (SCL)                         
+act8600_power:                                                                  
+4               84              1                                               
+5               49              1                                               
+6               57              0                                               
+7               57              1                                               
+8               36              1                                               
+===>start MSC0 clock                                                            
+mmc0: No card detect facilities available                                       
+mmc0: new high speed SDHC card at address 0215                                  
+JZ mmc0 driver registered                                                       
+===>start MSC1 clock!                                                           
+===>REG_CPM_CLKGR0 = 0x2fddb780                                                 
+mmc1: new high speed SD card at address 0215                                    
+JZ mmc1 driver registered                                                       
+musb_hdrc: version 6.0, musb-dma, otg (peripheral+host), debug=0                
+jz4760: Normal mode.                                                            
+musb_hdrc musb_hdrc.0: DMA IRQ: Shared. DMA Channels: 6.                        
+jz4760: Disable USB PHY.                                                        
+jz_vbus_hotplug: Registered.                                                    
+musb_hdrc musb_hdrc.0: USB OTG mode controller at b3440000 using DMA, IRQ 21    
+NET: Registered protocol family 1                                               
+cable state is OFFLINE                                                          
+msgmni has been set to 498                                                      
+alg: No test for stdrng (krng)                                                  
+io scheduler noop registered                                                    
+io scheduler cfq registered (default)                                           
+Medive printk:  create proc :  it6610_me!                                       
+LCDC: PixClock:12000000                                                         
+REG_CPM_LPCDR=0x20000023                                                        
+LCDC: PixClock:12000000                                                         
+REG_CPM_LPCDR=0x20000023                                                        
+test kernel argv from uboot start!                                              
+JZ4770: Char device core registered.                                            
+JZ4770: Virtual Driver of TCSM registered.                                      
+init rda5807p                                                                   
+++++++++++++ HP OUT +++++++++++++                                               
+REG_CPM_GPUCDR= 0x00000002                                                      
+GPU CLOCK USE PLL0                                                              
+GPU GPU_CLK2x= 340 MHz                                                          
+Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled                        
+ɥ±á250: ttyS2 at MMIO 0x0 (irq = 3) is a 16550A                                 
+loop: module loaded                                                             
+efuse check OK!                                                                 
+register misc device efuse successed.                                           
+jz4770_mii_bus: probed                                                          
+eth%d: Don't found any phy device at all                                        
+jz4770_mac jz4770_mac.0: MII Probe failed!                                      
+PPP generic driver version 2.4.2                                                
+PPP Deflate Compression module registered                                       
+PPP BSD Compression module registered                                           
+PPP MPPE Compression module registered                                          
+usbmon: debugfs is not available                                                
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver                          
+jz-ohci jz-ohci.0: JZ OHCI                                                      
+jz-ohci jz-ohci.0: new USB bus registered, assigned bus number 1                
+jz-ohci jz-ohci.0: irq 20, io mem 0x13430000                                    
+usb usb1: configuration #1 chosen from 1 choice                                 
+hub 1-0:1.0: USB hub found                                                      
+hub 1-0:1.0: 2 ports detected                                                   
+Initializing USB Mass Storage driver...                                         
+usbcore: registered new interface driver usb-storage                            
+USB Mass Storage support registered.                                            
+g_file_storage gadget: File-backed Storage Gadget, version: 20 November 2008    
+g_file_storage gadget: Number of LUNs=1                                         
+jz4760: Disable USB PHY.                                                        
+musb_hdrc musb_hdrc.0: MUSB HDRC host driver                                    
+musb_hdrc musb_hdrc.0: new USB bus registered, assigned bus number 2            
+usb usb2: configuration #1 chosen from 1 choice                                 
+hub 2-0:1.0: USB hub found                                                      
+hub 2-0:1.0: 1 port detected                                                    
+jz4760: Enable USB PHY.                                                         
+jz-gpio-keys: scan interval 20ms                                                
+input: JZ GPIO keys as /class/input/input0                                      
+input: touchscreen as /class/input/input1                                       
+input: JZ Touch Screen registered.                                              
+Create vbat proc entry.                                                         
+WARNING: can NOT get clock 4119!                                                
+jz4770-rtc jz4770-rtc: rtc core: registered jz4770-rtc as rtc0                  
+mmcblk0: mmc0:0215 NCard 3.74 GiB                                               
+ mmcblk0: p1 p2 p3 p4                                                           
+mmcblk1: mmc1:0215 APPSD 121 MiB                                                
+ mmcblk1: p1                                                                    
+usbcore: registered new interface driver usbhid                                 
+usbhid: v2.6:USB HID core driver                                                
+register codec 802adf58                                                         
+===>enter init_jz_i2s                                                           
+musb_stage0_irq 759: unhandled DISCONNECT transition (UNDEFINED)                
+ drivers/video/jz4760_lcd.c 3103 avout_ack_timer 1                              
+hdmi out                                                                        
+JZ I2S OSS audio driver initialized                                             
+NET: Registered protocol family 17                                              
+jz4770-rtc jz4770-rtc: setting system clock to 2011-11-20 10:05:51 UTC (1321783)
+kjournald starting.  Commit interval 5 seconds                                  
+EXT3-fs: mounted filesystem with writeback data mode.                           
+VFS: Mounted root (ext3 filesystem) readonly on device 179:1.                   
+Freeing unused kernel memory: 152k freed                                        
+Warning: unable to open an initial console.                                     
+kjournald starting.  Commit interval 5 seconds                                  
+EXT3-fs: mounted filesystem with writeback data mode.                           
+                                                                                
+                                                                                
+                                                                                
+Welcome to NEOGEO X                                                             
+(none) login: Medive printk: write it610 mode is 0                              
+LCD disable timeout! REG_LCD_STATE=0x00000000x                                  
+Medive printk: write it610 mode is 0                                            
+LCD disable timeout! REG_LCD_STATE=0x00000006x                                  
+mixer set volume,is external codec 0                                            
+key_open
+
+Welcome to NEOGEO X                                                            
+(none) login: root                                                              
+test string....                                                                
+# id                                                                            
+uid=0(root) gid=0(root) groups=0(root),10(wheel)                                
+# uname -a                                                                      
+Linux (none) 2.6.31.3-g6113b4c-dirty #380 Wed Jan 16 12:33:35 CST 2013 mips GNUx
+#
+
+
+Firmware update log:
+
+SD card found!
+init ok
+
+
+U-Boot 1.1.6-g4c3c6395-dirty (Jan 16 2013 - 12:29:21)
+
+Board: NEOGEO X(CPU Speed 1020 MHz)
+DRAM:  256 MB
+Error: Unknown flash ID, force set to 'SST_ID_39SF040'
+Flash: 512 kB
+NAND:nand_get_flash_type: No NAND device found!!!
+NAND device: dev_id: 0x0000 ext_id: 0x000000 not known!
+nand_scan: No NAND device found!!!
+0 MiB
+SD init ok
+*** Warning - MMC/SD first load, using default environment
+
+-=-=-=-= 0x8ff7f000 -=-=-=- 
+jz4750_lcd.c 1439
+usb status is 1
+read vbat value is 4254
+usb status is 4
+SNK go go go!
+act8600: Write register --00000080
+data: 00000024
+act8600: Read register --00000081
+data: 00000005
+act8600: Write register --00000081
+data: 00000081
+LCD quick disable timeout!
+jz4750_lcd.c 1385
+jz4750_lcd.c 1488
+pix clk is 12142857
+In jz4750fb_deep_set_mode  
+pix clk is 12142857
+jz4750_lcd.c 1500
+LCD quick disable timeout!
+pix clk is 12142857
+jz4750_lcd.c 1515
+usb status is 1
+usb status is 1
+jz4750_lcd.c 1612
+SD init ok
+ll init
+CFG_CPU_SPEED = 23C34600
+CFG_EXTAL = 00B71B00
+cfcr = 03431530
+plcr1 = B1000120
+REG_CPM_CPCCR = 03431530
+REG_CPM_CPPCR = B1008520
+cpu_clk = 23C34600
+mem_clk = 08F0D180
+ps = 00001A0A
+00000003
+{
+00000001
+00000003
+00000002
+00000003
+00000004
+
+00000002
+00000003
+00000002
+00000003
+00000004
+
+00000003
+00000003
+00000002
+00000003
+00000004
+
+}
+X00000003
+00000002
+-0000001F
+00000014
+00002326
+Setup fw args finish!
+Start address is :00000000
+Address offset is:00C00000
+GOT correct to   :80C850C0
+cpu speed init ok!!!
+gpio as uart 2 work
+
+MSC Secondary Program Loader
+act8600: Write register --00000080
+data: 00000024
+act8600: Read register --00000081
+data: 00000005
+act8600: Write register --00000081
+data: 00000081
+LCD quick disable timeout!
+LCD quick disable timeout!
+mmc1_init start
+mmc1_init after msc1 init 
+cmd res after 55 is 37
+cmd res after 41 is 3f
+SD card found!
+retries is 58
+sd1 init ok
+
+
+U-Boot 1.1.6-g6e69133d-dirty (Jul  7 2013 - 23:14:52)
+
+Board: NEOGEO X(CPU Speed 1020 MHz)
+DRAM:  256 MB
+Error: Unknown flash ID, force set to 'SST_ID_39SF040'
+Flash: 512 kB
+NAND:nand_get_flash_type: No NAND device found!!!
+NAND device: dev_id: 0x0000 ext_id: 0x000000 not known!
+nand_scan: No NAND device found!!!
+0 MiB
+msc_read 637 try to  read kernel image from msc to ram
+SD card found!
+sd1 init ok
+*** Warning - MMC/SD first load, using default environment
+
+-=-=-=-= 0x8ff7f000 -=-=-=- 
+jz4750_lcd.c 1439
+usb status is 1
+read vbat value is 4254
+usb status is 4
+SNK go go go!
+act8600: Write register --00000080
+data: 00000024
+act8600: Read register --00000081
+data: 00000081
+act8600: Write register --00000081
+data: 00000081
+jz4750_lcd.c 1385
+jz4750_lcd.c 1488
+pix clk is 12142857
+In jz4750fb_deep_set_mode  
+pix clk is 12142857
+jz4750_lcd.c 1500
+LCD quick disable timeout!
+pix clk is 12142857
+jz4750_lcd.c 1515
+usb status is 1
+usb status is 1
+jz4750_lcd.c 1612
+SD card found!
+sd1 init ok
+Linux version 2.6.31.3-00010-g94ce818-dirty (ugame_hhx@ugame-desktop) (gcc version 4.1.2) #50 Sat Jul 13 10:16:02 CST 2013
+Jz47XX Floating coprocessor work on 32*32bit mode
+console [early0] enabled
+CPU revision is: 2ed1024f (Ingenic JZRISC)
+FPU revision is: 00330000
+CPU clock: 1020MHz, System clock: 128MHz, Peripheral clock: 128MHz, Memory clock: 128MHz
+JZ4770 F4770 board setup
+Power Management for JZ
+Determined physical RAM map:
+ memory: 04000000 @ 00000000 (usable)
+User-defined physical RAM map:
+ memory: 10000000 @ 00000000 (usable)
+Initrd not found or empty - disabling initrd
+Zone PFN ranges:
+  Normal   0x00000000 -> 0x00010000
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00010000
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
+Kernel command line: mem=256M console=ttyS2,57600n8 ip=off rw rdinit=/linuxrc
+PID hash table entries: 1024 (order: 10, 4096 bytes)
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Primary instruction cache 16kB, VIPT, 4-way, linesize 32 bytes.
+Primary data cache 16kB, 4-way, VIPT, no aliases, linesize 32 bytes
+Memory: 253636k/262144k available (2924k kernel code, 8196k reserved, 1355k data, 1508k init, 0k highmem)
+SLUB: Genslabs=7, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+NR_IRQS:384
+Console: colour dummy device 80x25
+console handover: boot [early0] -> real [ttyS2]
+Calibrating delay loop... 814.28 BogoMIPS (lpj=4071424)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+jz_platform_init
+bio: create slab <bio-0> at 0
+SCSI subsystem initialized
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+jz_i2c0 jz_i2c0.0: JZ4760 i2c bus driver.
+jz_i2c1 jz_i2c1.1: JZ4760 i2c bus driver.
+jz_i2c2 jz_i2c2.5: JZ4760 i2c bus driver.
+i2c-gpio i2c-gpio.3: using pins 101 (SDA) and 100 (SCL)
+act8600_power:
+4		84		1
+5		49		1
+6		57		0
+7		57		1
+8		36		1
+===>start MSC0 clock
+mmc0: No card detect facilities available
+mmc0: new high speed SDHC card at address 0215
+JZ mmc0 driver registered
+===>start MSC1 clock!
+===>REG_CPM_CLKGR0 = 0x2fd83780
+mmc1: new SD card at address 0260
+JZ mmc1 driver registered
+musb_hdrc: version 6.0, musb-dma, otg (peripheral+host), debug=0
+jz4760: Normal mode.
+musb_hdrc musb_hdrc.0: DMA IRQ: Shared. DMA Channels: 6.
+jz4760: Disable USB PHY.
+jz_vbus_hotplug: Registered.
+musb_hdrc musb_hdrc.0: USB OTG mode controller at b3440000 using DMA, IRQ 21
+NET: Registered protocol family 1
+cable state is POWER
+msgmni has been set to 495
+alg: No test for stdrng (krng)
+io scheduler noop registered
+io scheduler cfq registered (default)
+Medive printk:  create proc :  it6610_me!
+LCDC: PixClock:24000000
+REG_CPM_LPCDR=0x20000011
+LCDC: PixClock:24000000
+REG_CPM_LPCDR=0x20000011
+test kernel argv from uboot start!
+JZ4770: Char device core registered.
+JZ4770: Virtual Driver of TCSM registered.
+init rda5807p 
+++++++++++++ HP OUT +++++++++++++
+REG_CPM_GPUCDR= 0x00000002
+GPU CLOCK USE PLL0
+GPU GPU_CLK2x= 340 MHz
+Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+serial8250: ttyS0 at MMIO 0x0 (irq = 5) is a 16550A
+serial8250: ttyS1 at MMIO 0x0 (irq = 4) is a 16550A
+ɥ±á250: ttyS2 at MMIO 0x0 (irq = 3) is a 16550A
+serial8250: ttyS3 at MMIO 0x0 (irq = 2) is a 16550A
+loop: module loaded
+efuse check OK!
+register misc device efuse successed.
+jz4770_mii_bus: probed
+eth%d: Don't found any phy device at all
+jz4770_mac jz4770_mac.0: MII Probe failed!
+PPP generic driver version 2.4.2
+PPP Deflate Compression module registered
+PPP BSD Compression module registered
+PPP MPPE Compression module registered
+usbmon: debugfs is not available
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+jz-ohci jz-ohci.0: JZ OHCI
+jz-ohci jz-ohci.0: new USB bus registered, assigned bus number 1
+jz-ohci jz-ohci.0: irq 20, io mem 0x13430000
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 2 ports detected
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+g_file_storage gadget: File-backed Storage Gadget, version: 20 November 2008
+g_file_storage gadget: Number of LUNs=1
+jz4760: Disable USB PHY.
+musb_hdrc musb_hdrc.0: MUSB HDRC host driver
+musb_hdrc musb_hdrc.0: new USB bus registered, assigned bus number 2
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 1 port detected
+jz4760: Enable USB PHY.
+jz-gpio-keys: scan interval 20ms
+input: JZ GPIO keys as /class/input/input0
+input: touchscreen as /class/input/input1
+input: JZ Touch Screen registered.
+Create vbat proc entry.
+WARNING: can NOT get clock 4119!
+jz4770-rtc jz4770-rtc: rtc core: registered jz4770-rtc as rtc0
+mmcblk0: mmc0:0215 NCard 3.74 GiB 
+ mmcblk0: p1 p2 p3 p4
+mmcblk1: mmc1:0260 ITE   1.84 GiB 
+ mmcblk1: p1 p2 p3 p4
+usbcore: registered new interface driver usbhid
+usbhid: v2.6:USB HID core driver
+register codec 802a6d0c
+===>enter init_jz_i2s
+ drivers/video/jz4760_lcd.c 3103 avout_ack_timer 1
+hdmi out
+JZ I2S OSS audio driver initialized
+NET: Registered protocol family 17
+jz4770-rtc jz4770-rtc: setting system clock to 2011-11-20 20:49:21 UTC (1321822161)
+Freeing unused kernel memory: 1508k freed
+Start mdev...
+1
+Start recovery...
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on mmcblk0p2, internal journal
+EXT3-fs: mounted filesystem with writeback data mode.
+update loop
+local file version is 371
+temp_cfg file length is 351
+sys_file_version is 701
+boot code is 00000001
+serial code num is 3
+serial_code0 is 00000000
+serial_code1 is 00000011
+serial_code2 is 00000001
+temp serial num is 00000001
+file_offsets is 355
+file_offsets is 1035315
+file_offsets is 2070307
+file_offsets is 3105267
+file_offsets is 4922942
+file_offsets is 8102393
+file_offsets is 563847673
+burn offsets is 0
+file array is 3
+burn offsets is 4194304
+file array is 4
+burn offsets is 8388608
+file array is 5
+burn offsets is 12582912
+file array is 6
+burn offsets is 568328192
+file array is 7
+file length is 1034960
+file length is 1034992
+file length is 1034960
+file length is 1817675
+file length is 3179451
+file length is 555745280
+file length is 136314880
+byte_w: 2, byte_h: 16, asc_w: 7, cjk_w: 15
+----font init finish----
+char_num is 5
+src/update.c 616 update_dir is /mmc/sys_update_file
+enough read_return is 1034960,write_return is 1034960
+enough read_return is 1817675,write_return is 1817675
+enough read_return is 3179451,write_return is 3179451
+total read is 555745280,
+total write is 555745280
+total read is 136314880,
+total write is 136314880
+update success!
+
+ -- prdelka
